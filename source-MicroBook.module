@@ -1,0 +1,61 @@
+<?php
+/**
+ * this File is part of MicroPhonebook - (c) 20225
+ *
+ * NOTICE OF LICENSE
+ *
+ * EUROPEAN UNION PUBLIC LICENCE v. 1.2
+ * that is bundled with this package in the file LICENSE.md.
+ * It is also available through the world-wide-web at this URL:
+ * https://eupl.eu/
+ *
+ * 
+ * @author      Micro aka Wutze
+ * @copyright   2025 MicroPhonebook
+ * @link
+ * @see         Internal Documentation ~/readme.md
+ * @version     1.0
+ * @todo        nada
+ */
+
+class MicroBook extends superfecta_base {
+
+        public $description;
+        public $version_requirement = "1.0";
+
+        public function __construct() {
+                $this->description = _("Eigene Suche MicroPhonebook");
+        }
+
+    /**
+     * Funktion zur Nummernsuche
+     * 
+     * @param mixed $thenumber
+     * @param mixed $run_param
+     * @return string|null
+     */
+    function get_caller_id($thenumber, $run_param=array()) {
+        $caller_id = null;
+        $this->DebugPrint("Number for lookup: $thenumber");
+        // SQL-Abfrage direkt
+        $sql = "
+            SELECT ce.displayname AS name
+            FROM contactmanager_entry_numbers AS cen
+            JOIN contactmanager_group_entries AS ce ON cen.entryid = ce.id
+            WHERE cen.number = '$thenumber'
+            LIMIT 1
+        ";
+        //$this->DebugPrint("SQL State: $sql");
+        $stmt = $this->db->sql($sql); // PDOStatement zurück
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC); // erste Zeile als assoziatives Array
+
+        if (!empty($row['name'])) {
+            $caller_id = strip_tags($row['name']);
+            $this->DebugPrint("Found caller ID: $caller_id");
+        } else {
+            $this->DebugPrint("Not found: $thenumber");
+        }
+
+        return $caller_id;
+    }
+}
